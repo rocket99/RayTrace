@@ -29,20 +29,34 @@ bool TKDielectric::scatter(const TKRay &ray_in, const TKHitRecord &rec,
 	float ni_over_nt;
 	attenuation = glm::vec3(1.0f, 1.0f, 1.0f);
 	glm::vec3 refracted;
+	float reflect_prob;
+	float cosine;
 	if(dot(ray_in.direction(), rec.normal) > 0){
 		outNormal = -rec.normal;
 		ni_over_nt = ref_idx;
+		cosine = ref_idx*dot(ray_in.direction(), rec.normal)/ray_in.direction().length();
 	}else{
 		outNormal = rec.normal;
 		ni_over_nt = 1.0f/ref_idx;
+		cosine = -dot(ray_in.direction(), rec.normal)/ray_in.direction().length();
 	}
 
 	if(TKMath::refract(ray_in.direction(), outNormal, ni_over_nt, refracted)){
-		scattered = TKRay(rec.p, refracted);
+		reflect_prob = TKMath::schlick(cosine, ref_idx);
 	}else{
 		scattered = TKRay(rec.p, reflect);
-		return false;
+		reflect_prob = 1.0f;
 	}
 
+	if(drand48() < reflect_prob){
+		scattered = TKRay(rec.p, reflect);
+	}else{
+		scattered = TKRay(rec.p, refracted);
+	}
 	return true;
 }
+
+
+
+
+

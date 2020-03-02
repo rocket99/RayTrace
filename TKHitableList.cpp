@@ -16,3 +16,5 @@ bool TKHitableList::hit(const TKRay &r, float t_min, float t_max, TKHitRecord &r
 	}
 	return hit_anything;
 }
+
+

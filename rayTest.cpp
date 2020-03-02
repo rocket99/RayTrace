@@ -60,23 +60,27 @@ int main(int argc, char *argv[]){
 	}
 	printf("\n");
 
-	const uint32_t col = 1600;
+	const uint32_t col = 1200;
 	const uint32_t row = 800;
 	const uint32_t ns = 10;
 	
 	uint8_t *data = (uint8_t *)malloc(sizeof(uint8_t)*row*col*3);
 	
-	TKHitable *list[4];
-	TKLambertian *m0 = new TKLambertian(glm::vec3(0.8, 0.3, 0.3));
+	TKHitable *list[5];
+	TKLambertian *m0 = new TKLambertian(glm::vec3(0.1, 0.3, 0.8));
 	TKLambertian *m1 = new TKLambertian(glm::vec3(0.8, 0.8, 0.0));
 	list[0] = new TKSphere(glm::vec3(0.0f, 0.0f, -1.0f), 0.5, m0);
 	list[1] = new TKSphere(glm::vec3(0.0f, -100.5f, -1.0f), 100, m1);
 	TKMetal *m2 = new TKMetal(glm::vec3(0.8, 0.6, 0.2), 0.6);
 	TKDielectric *m3 = new TKDielectric(1.5);
 	list[2] = new TKSphere(glm::vec3(1.0, 0.0, -1.0), 0.5, m2);
-	list[3] = new TKSphere(glm::vec3(-1.0, 0.0, -1.0), 0.5, m3);
-	TKHitable *world = new TKHitableList(list, 4);
-	TKCamera cam;
+	list[4] = new TKSphere(glm::vec3(-1.0, 0.0, -1.0), 0.5, m3);
+	list[3] = new TKSphere(glm::vec3(-1.0, 0.0, -1.0), -0.45, m3);
+	TKHitable *world = new TKHitableList(list, 5);
+	TKCamera cam(glm::vec3(-2.0, 2.0, 1.0),
+				 glm::vec3(0.0, 0.0, -1.0),
+				 glm::vec3(0.0, 1.0, 0.0),
+				 90.0f, float(col)/float(row));
 	for(int i = 0; i<row; ++i){
 		for(uint32_t j = 0; j<col; ++j){
 			glm::vec3 c = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -101,3 +105,5 @@ int main(int argc, char *argv[]){
 	free(data);
 	return 0;
 }
+
+
