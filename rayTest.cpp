@@ -62,7 +62,7 @@ int main(int argc, char *argv[]){
 
 	const uint32_t col = 1200;
 	const uint32_t row = 800;
-	const uint32_t ns = 10;
+	const uint32_t ns = 100;
 	
 	uint8_t *data = (uint8_t *)malloc(sizeof(uint8_t)*row*col*3);
 	
@@ -77,10 +77,15 @@ int main(int argc, char *argv[]){
 	list[4] = new TKSphere(glm::vec3(-1.0, 0.0, -1.0), 0.5, m3);
 	list[3] = new TKSphere(glm::vec3(-1.0, 0.0, -1.0), -0.45, m3);
 	TKHitable *world = new TKHitableList(list, 5);
-	TKCamera cam(glm::vec3(-2.0, 2.0, 1.0),
-				 glm::vec3(0.0, 0.0, -1.0),
+
+	glm::vec3 lookfrom(4.0f, 4.0f, 3.0f);
+	glm::vec3 lookat(0.0, 0.0, -1.0f);
+	float dist_to_focus = (lookfrom - lookat).length();
+	float aperture = 1.0f;
+	
+	TKCamera cam(lookfrom, lookat,
 				 glm::vec3(0.0, 1.0, 0.0),
-				 90.0f, float(col)/float(row));
+				 20.0f, float(col)/float(row), aperture, dist_to_focus);
 	for(int i = 0; i<row; ++i){
 		for(uint32_t j = 0; j<col; ++j){
 			glm::vec3 c = glm::vec3(0.0f, 0.0f, 0.0f);
