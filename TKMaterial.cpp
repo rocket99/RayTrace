@@ -7,7 +7,7 @@
 bool TKLambertian::scatter(const TKRay &ray_in, const TKHitRecord &rec,
 						   glm::vec3 &attenuation, TKRay &scattered) const {
 	glm::vec3 target = rec.p+rec.normal+TKMath::random_in_unit_sphere();
-	scattered = TKRay(rec.p, target-rec.p);
+	scattered = TKRay(rec.p, target-rec.p, ray_in.time());
 	attenuation = albedo;
 	return true;
 }

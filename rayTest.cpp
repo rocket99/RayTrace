@@ -9,6 +9,9 @@
 #include "TKMaterial.h"
 #include "TKMath.h"
 
+#include <vector>
+
+
 void writePPMFile(const char *fileName, uint32_t width, uint32_t height, uint8_t *data)
 {
 	if(data == nullptr){
@@ -51,6 +54,50 @@ glm::vec3 color(const TKRay &ray, TKHitable *world, int depth) {
 	return (1.0f-t)*glm::vec3(1.0f, 1.0f, 1.0f) + t*glm::vec3(0.5, 0.7, 1.0);
 }
 
+std::vector<TKHitable *> random_scene(){
+	printf("1\n");
+	int n = 500;
+	std::vector<TKHitable *> list;
+	list.push_back(new TKSphere(glm::vec3(0.0, -1000.0, 0.0), 1000, new TKLambertian(glm::vec3(0.5f, 0.5f, 0.5f))));
+	int i = 1;
+	for(int a = -10; a < 10; ++ a){
+		for(int b = -10; b < 10; ++ b){
+			float choose_mat = drand48();
+			glm::vec3 center = glm::vec3(a+0.9f*drand48(), 0.2f, b+0.9f*drand48());
+			if((center-glm::vec3(4.0f, 0.2f, 0.0f)).length() > 0.9f){
+				if(choose_mat < 0.8f){
+					/*
+					list.push_back(new TKSphere(center, 0.2,
+												new TKLambertian(glm::vec3(drand48()*drand48(),
+																		   drand48()*drand48(),
+																		   drand48()*drand48()))));
+					*/					
+					list.push_back(new TKMovingSphere(center, center+glm::vec3(0.0f, 0.5f*drand48(), 0.0f),
+													  0.0, 1.0, 0.2,
+													  new TKLambertian(glm::vec3(drand48()*drand48(),
+																		   drand48()*drand48(),
+																		   drand48()*drand48()))));
+				}else if(choose_mat < 0.95){
+					list.push_back(new TKSphere(center, 0.2f,
+												new TKMetal(glm::vec3(0.5f*(1+drand48()),
+																	  0.5*(1+drand48()),
+																	  0.5*(1+drand48())),
+															0.5*drand48())));
+				}else{
+					list.push_back(new TKSphere(center, 0.2f, new TKDielectric(1.5)));
+				}
+				++ i;
+			}
+		}
+	}
+	list.push_back(new TKSphere(glm::vec3(0.0, 1.0, 0.0), 1.0, new TKDielectric(1.5)));
+	list.push_back(new TKSphere(glm::vec3(-4, 1.0, 0.0), 1.0, new TKLambertian(glm::vec3(0.4, 0.2, 0.1))));
+	list.push_back(new TKSphere(glm::vec3(4, 1, 0), 1.0, new TKMetal(glm::vec3(0.7, 0.6, 0.5), 0.0)));
+	printf("2 %d, %ld\n", i, list.size());
+
+	return list;
+}
+
 int main(int argc, char *argv[]){
 	if(argc >= 0){
 		printf("args count %d\n", argc);
@@ -60,32 +107,25 @@ int main(int argc, char *argv[]){
 	}
 	printf("\n");
 
-	const uint32_t col = 1200;
-	const uint32_t row = 800;
-	const uint32_t ns = 100;
+	const uint32_t col = 1920;
+	const uint32_t row = 1080;
+	const uint32_t ns = 10;
 	
 	uint8_t *data = (uint8_t *)malloc(sizeof(uint8_t)*row*col*3);
+		
+	std::vector<TKHitable *>objs = random_scene();
+	TKHitable *world = new TKHitableList(objs.data(), objs.size());
 	
-	TKHitable *list[5];
-	TKLambertian *m0 = new TKLambertian(glm::vec3(0.1, 0.3, 0.8));
-	TKLambertian *m1 = new TKLambertian(glm::vec3(0.8, 0.8, 0.0));
-	list[0] = new TKSphere(glm::vec3(0.0f, 0.0f, -1.0f), 0.5, m0);
-	list[1] = new TKSphere(glm::vec3(0.0f, -100.5f, -1.0f), 100, m1);
-	TKMetal *m2 = new TKMetal(glm::vec3(0.8, 0.6, 0.2), 0.6);
-	TKDielectric *m3 = new TKDielectric(1.5);
-	list[2] = new TKSphere(glm::vec3(1.0, 0.0, -1.0), 0.5, m2);
-	list[4] = new TKSphere(glm::vec3(-1.0, 0.0, -1.0), 0.5, m3);
-	list[3] = new TKSphere(glm::vec3(-1.0, 0.0, -1.0), -0.45, m3);
-	TKHitable *world = new TKHitableList(list, 5);
-
-	glm::vec3 lookfrom(4.0f, 4.0f, 3.0f);
+	printf("world 0x%p\n", world);
+	glm::vec3 lookfrom(-13.0f, 7.0f, 8.0f);
 	glm::vec3 lookat(0.0, 0.0, -1.0f);
-	float dist_to_focus = (lookfrom - lookat).length();
-	float aperture = 1.0f;
+	float dist_to_focus = /*12.0f*/(lookfrom - lookat).length();
+	float aperture = 0.0f;
 	
 	TKCamera cam(lookfrom, lookat,
 				 glm::vec3(0.0, 1.0, 0.0),
-				 20.0f, float(col)/float(row), aperture, dist_to_focus);
+				 20.0f, float(col)/float(row), aperture, dist_to_focus, 0.0f, 1.0f);
+	printf("start ray trace\n");
 	for(int i = 0; i<row; ++i){
 		for(uint32_t j = 0; j<col; ++j){
 			glm::vec3 c = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -93,7 +133,6 @@ int main(int argc, char *argv[]){
 				float u = float(j+drand48()) / float(col);
 				float v = float(i+drand48()) / float(row);
 				TKRay ray = cam.getRay(u, v);
-				glm::vec3 p = ray.point_at_parameter(2.0f);
 				c += color(ray, world, 0);
 			}
 			c /= float(ns);

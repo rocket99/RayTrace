@@ -12,9 +12,10 @@ TKRay::TKRay(const TKRay &ray){
 	m_direction = ray.m_direction;
 }
 
-TKRay::TKRay(const glm::vec3 &o, const glm::vec3 &d){
+TKRay::TKRay(const glm::vec3 &o, const glm::vec3 &d, float ti){
 	m_origin = o;
 	m_direction = d;
+	m_time = ti;
 }
 
 glm::vec3 TKRay::origin() const {
@@ -33,3 +34,6 @@ glm::vec3 TKRay::point_at_parameter(float t) const {
 	return m_origin + m_direction * t;
 }
  
+float TKRay::time() const{
+	return m_time;
+}

@@ -11,7 +11,9 @@ class TKCamera{
 public:
 	TKCamera(glm::vec3 lookfrom, glm::vec3 lookat,
 			 glm::vec3 vup, float vfov, float aspect,
-			 float aperture, float focus_dist){
+			 float aperture, float focus_dist, float t0, float t1){
+		time0 = t0;
+		time1 = t1;
 		lens_radius = aperture * 0.5f;
 	   
 		float theta = vfov*M_PI/180.0f;
@@ -30,8 +32,9 @@ public:
 	TKRay getRay(float s, float t){
 		glm::vec3 rd = lens_radius * TKMath::random_in_unit_disk();
 		glm::vec3 offset = u*rd.x + v*rd.y;
+		float time = time0+drand48()*(time1-time0);
 		return TKRay(origin + offset,
-					 lower_left_corner + s*horizontal + t*vertical - origin - offset);
+					 lower_left_corner + s*horizontal + t*vertical - origin - offset, time);
 	}
 	
 	glm::vec3 origin;
@@ -40,6 +43,7 @@ public:
 	glm::vec3 vertical;
 	glm::vec3 u, v, w;
 	float lens_radius;
+	float time0, time1;
 };
 
 
